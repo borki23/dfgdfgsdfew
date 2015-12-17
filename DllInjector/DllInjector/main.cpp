@@ -31,7 +31,8 @@ HANDLE getProcessHandle(const std::string &name) {
 		{
 			printf("Process: '%'s found\n", name.c_str());
 			CloseHandle(processSnapshot);
-			return OpenProcess(PROCESS_ALL_ACCESS, FALSE,processEntries.th32ProcessID);
+			HANDLE result = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processEntries.th32ProcessID);
+			return result;
 		}
 		while (Process32Next(processSnapshot, &processEntries))
 		{
@@ -39,7 +40,8 @@ HANDLE getProcessHandle(const std::string &name) {
 			{
 				printf("Process: '%s' found\n", name.c_str());
 				CloseHandle(processSnapshot);
-				return OpenProcess(PROCESS_ALL_ACCESS, FALSE, processEntries.th32ProcessID);
+				HANDLE result = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processEntries.th32ProcessID);
+				return result;
 			}
 		}
 	} else {
@@ -63,7 +65,7 @@ int main() {
 	privileges.Privileges[0].Luid = luid;
 	privileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 	AdjustTokenPrivileges(hToken, false, &privileges, 0, 0, 0);
-
+	printf("%i", GetLastError());
 	CloseHandle(hToken);
 	CloseHandle(thisProcess);
 
@@ -78,7 +80,13 @@ int main() {
 		//command = getchar();
 		Sleep(100);
 		gameProcess = getProcessHandle(PROCESS_NAME);
-		if (gameProcess != NULL) break;
+		if (gameProcess == NULL) {
+			printf("1 ...%i", GetLastError());
+		}
+ else 
+ {
+	 break;
+ }
 	}
 
 	FARPROC libraryFunction = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
